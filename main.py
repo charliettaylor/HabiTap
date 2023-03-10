@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from datetime import timedelta
 from functools import lru_cache
+from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -8,15 +9,18 @@ from fastapi.openapi.utils import get_openapi
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from uuid import UUID
+
 
 import crud, models, schemas, auth, config
 
 from db import SessionLocal, engine
+from .routers import entries
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.include_router(entries.router)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -156,35 +160,3 @@ def create_habit(
             status_code=400, detail="Habit with that name already exists"
         )
     return crud.create_habit(db=db, habit=habit, user_id=user_id)
-
-
-@app.get("/entries/{habit_id}", response_model=list[schemas.Entry], tags=["Entries"])
-def get_entries_by_habit(habit_id: UUID, db: Session = Depends(get_db)):
-    entries = crud.get_entries_by_habit(db, habit_id)
-    if not entries:
-        raise HTTPException(status_code=404, detail=f"No entries for habit {habit_id}")
-    return entries.all()
-
-
-@app.post("/entries/", response_model=schemas.EntryCreate, tags=["Entries"])
-def create_entry(entry: schemas.EntryCreate, db: Session = Depends(get_db)):
-    db_entry = crud.get_entry(db, entry)
-    if db_entry.count() > 0:
-        raise HTTPException(status_code=400, detail="Entry already exists")
-
-    habit = crud.get_habit(db, entry.habit_id)
-    if not habit:
-        raise HTTPException(status_code=400, detail="Habit does not exist")
-
-    if entry.date < habit.start_date:
-        raise HTTPException(
-            status_code=400, detail="Can not make entry before habit start date"
-        )
-
-    if not habit.is_counted and entry.value not in [0, 1]:
-        raise HTTPException(
-            status_code=400,
-            detail="Non-counted habits must be 1 or 0 for true or false",
-        )
-
-    return crud.create_entry(db=db, entry=entry)
