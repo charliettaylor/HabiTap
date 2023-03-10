@@ -34,7 +34,7 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="Habitap API",
+        title="HabiTap API",
         version="1.0.0",
         description="A habit tracking app with a good API",
         routes=app.routes,
@@ -88,13 +88,8 @@ async def get_current_active_user(
 
 
 @app.get("/")
-async def root(token: str = Depends(oauth2_scheme)):
-    return {"token": token}
-
-
-@app.get("/test/{num}")
-async def num(num: int):
-    return {"message": f"Your number is {num}"}
+async def root():
+    return "<h1>Welcome to the Habitap API</h1>"
 
 
 @app.post("/users/", response_model=schemas.User, tags=["Users"])
