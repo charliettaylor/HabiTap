@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from datetime import timedelta
-from functools import lru_cache
 from uuid import UUID
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -11,10 +10,15 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 
-import crud, models, schemas, auth, config
+import src.crud as crud
+import src.models as models
+import src.schemas as schemas
+import src.auth as auth
+import src.config as config
+import src.dependencies as deps
 
-from db import SessionLocal, engine
-from .routers import entries
+from src.db import engine
+import src.routers.entries as entries
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -44,28 +48,14 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
-# Dependency
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@lru_cache()
-def get_settings():
-    return config.Settings()
-
 
 # Auth
 
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    settings: config.Settings = Depends(get_settings),
+    db: Session = Depends(deps.get_db),
+    settings: config.Settings = Depends(deps.get_settings),
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,7 +70,7 @@ async def get_current_user(
         token_data = schemas.TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = crud.get_user(username=token_data.username)
+    user = crud.get_user_by_email(db, email=token_data.username)
     if user is None:
         raise credentials_exception
     return user
@@ -89,7 +79,7 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: schemas.User = Depends(get_current_user),
 ):
-    if current_user.disabled:
+    if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
@@ -108,7 +98,7 @@ async def num(num: int):
 
 
 @app.post("/users/", response_model=schemas.User, tags=["Users"])
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+def create_user(user: schemas.UserCreate, db: Session = Depends(deps.get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -118,8 +108,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
-    settings: config.Settings = Depends(get_settings),
+    db: Session = Depends(deps.get_db),
+    settings: config.Settings = Depends(deps.get_settings),
 ):
     user = auth.authenticate_user(
         db, pwd_context, form_data.username, form_data.password
@@ -143,7 +133,7 @@ async def read_users_me(current_user: schemas.User = Depends(get_current_active_
 
 
 @app.get("/habits/{name}", response_model=schemas.Habit, tags=["Habits"])
-def get_habit_by_name(name: str, db: Session = Depends(get_db)):
+def get_habit_by_name(name: str, db: Session = Depends(deps.get_db)):
     habit = crud.get_habit_by_name(db, name)
     if not habit:
         raise HTTPException(status_code=404, detail=f"No habit with name {name}")
@@ -152,7 +142,7 @@ def get_habit_by_name(name: str, db: Session = Depends(get_db)):
 
 @app.post("/habits/{user_id}", response_model=schemas.Habit, tags=["Habits"])
 def create_habit(
-    user_id: UUID, habit: schemas.HabitCreate, db: Session = Depends(get_db)
+    user_id: UUID, habit: schemas.HabitCreate, db: Session = Depends(deps.get_db)
 ):
     db_habit = crud.get_habit_by_name(db, habit.name)
     if db_habit:

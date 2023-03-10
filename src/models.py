@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-from typing import List
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
-from db import Base
+from src.db import Base
 
 
 class User(Base):

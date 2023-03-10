@@ -43,11 +43,13 @@ class User(UserBase):
 
 
 class HabitBase(BaseModel):
-    name: str
-    description: str
-    goal: int
-    start_date: date
-    is_counted: bool
+    name: str = Field(default="", description="The name for this habit")
+    description: str = Field(default="", description="The description for this habit")
+    goal: int = Field(default=0, description="The goal for this habit")
+    start_date: date = Field(
+        default=date.today(), description="The date this habit started"
+    )
+    is_counted: bool = Field(default=False, description="Is this habit counted?")
 
 
 class Habit(HabitBase):
@@ -63,9 +65,9 @@ class HabitCreate(HabitBase):
 
 
 class EntryBase(BaseModel):
-    date: date
-    value: int
-    habit_id: UUID
+    date = Field(default=date.today(), description="The date this entry was created")
+    value: int = Field(default=0, description="The value for this entry")
+    habit_id: UUID = Field(default="", description="The habit this entry belongs to")
 
     class Config:
         orm_mode = True

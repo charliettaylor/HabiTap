@@ -3,13 +3,15 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, HTTPException, Depends
 
-from ..main import get_db
-import schemas, crud
+import src.dependencies as deps
+import src.schemas as schemas
+import src.crud as crud
 
 router = APIRouter()
 
+
 @router.get("/entries/{habit_id}", response_model=list[schemas.Entry], tags=["Entries"])
-def get_entries_by_habit(habit_id: UUID, db: Session = Depends(get_db)):
+def get_entries_by_habit(habit_id: UUID, db: Session = Depends(deps.get_db)):
     entries = crud.get_entries_by_habit(db, habit_id)
     if not entries:
         raise HTTPException(status_code=404, detail=f"No entries for habit {habit_id}")
@@ -17,7 +19,7 @@ def get_entries_by_habit(habit_id: UUID, db: Session = Depends(get_db)):
 
 
 @router.post("/entries/", response_model=schemas.EntryCreate, tags=["Entries"])
-def create_entry(entry: schemas.EntryCreate, db: Session = Depends(get_db)):
+def create_entry(entry: schemas.EntryCreate, db: Session = Depends(deps.get_db)):
     db_entry = crud.get_entry(db, entry)
     if db_entry.count() > 0:
         raise HTTPException(status_code=400, detail="Entry already exists")
