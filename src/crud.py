@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from sqlalchemy.orm import Session
 from uuid import uuid4, UUID
-import models, schemas
-import auth
+import src.models as models
+import src.schemas as schemas
+import src.auth as auth
 
 
 def get_user(db: Session, user_id: str):
@@ -49,6 +50,7 @@ def create_habit(
         goal=habit.goal,
         start_date=habit.start_date,
         owner_id=user_id,
+        is_counted=habit.is_counted,
     )
 
     db.add(db_habit)

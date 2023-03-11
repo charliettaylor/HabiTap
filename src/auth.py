@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
-import crud
+import src.crud as crud
 
 
 def verify_password(pwd_context, plain_password, hashed_password):
