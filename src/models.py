@@ -39,5 +39,6 @@ class Entry(Base):
     date = Column(Date(), unique=True, index=True)
     value = Column(Integer(), unique=False)
     habit_id = Column(UUID(as_uuid=True), ForeignKey("habits.id"))
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
 
     habit = relationship("Habit", back_populates="entries")

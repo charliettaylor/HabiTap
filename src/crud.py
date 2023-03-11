@@ -34,8 +34,12 @@ def get_habit(db: Session, id: UUID):
     return db.query(models.Habit).filter(models.Habit.id == id).first()
 
 
-def get_habit_by_name(db: Session, name: str):
-    return db.query(models.Habit).filter(models.Habit.name == name).first()
+def get_habit_by_name(db: Session, user_id: UUID, name: str):
+    return (
+        db.query(models.Habit)
+        .filter(models.Habit.name == name, models.Habit.owner_id == user_id)
+        .first()
+    )
 
 
 def create_habit(
@@ -59,15 +63,19 @@ def create_habit(
     return db_habit
 
 
-def get_entries_by_habit(db: Session, habit_id: UUID):
-    return db.query(models.Entry).filter_by(habit_id=habit_id)
+def get_entries_by_habit(db: Session, user_id: UUID, habit_id: UUID):
+    return db.query(models.Entry).filter_by(habit_id=habit_id, owner_id=user_id).all()
 
 
-def get_entry(db: Session, entry: schemas.EntryBase):
-    return db.query(models.Entry).filter_by(date=entry.date, habit_id=entry.habit_id)
+def get_entry(db: Session, user_id: UUID, entry: schemas.EntryBase):
+    return (
+        db.query(models.Entry)
+        .filter_by(date=entry.date, habit_id=entry.habit_id, owner_id=user_id)
+        .first()
+    )
 
 
-def create_entry(db: Session, entry: schemas.EntryCreate):
+def create_entry(db: Session, user_id: UUID, entry: schemas.EntryCreate):
     id = uuid4()
 
     db_entry = models.Entry(
@@ -75,6 +83,7 @@ def create_entry(db: Session, entry: schemas.EntryCreate):
         date=entry.date,
         value=entry.value,
         habit_id=entry.habit_id,
+        owner_id=user_id,
     )
 
     db.add(db_entry)

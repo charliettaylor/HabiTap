@@ -75,6 +75,7 @@ class EntryBase(BaseModel):
 
 class Entry(EntryBase):
     id: UUID
+    owner_id: UUID = Field(default="", description="The user this entry belongs to")
 
 
 class EntryCreate(EntryBase):
