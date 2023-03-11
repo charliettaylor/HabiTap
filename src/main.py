@@ -89,7 +89,7 @@ async def get_current_active_user(
 
 @app.get("/")
 async def root():
-    return "<h1>Welcome to the Habitap API</h1>"
+    return "Welcome to the Habitap API"
 
 
 @app.post("/users/", response_model=schemas.User, tags=["Users"])
@@ -100,7 +100,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(deps.get_db)):
     return crud.create_user(db=db, pwd_context=pwd_context, user=user)
 
 
-@app.post("/token", response_model=schemas.Token)
+@app.post("/token", response_model=schemas.Token, tags=["Users"])
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(deps.get_db),
@@ -122,7 +122,7 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/users/me/", response_model=schemas.User)
+@app.get("/users/me/", response_model=schemas.User, tags=["Users"])
 async def read_users_me(current_user: schemas.User = Depends(get_current_active_user)):
     return current_user
 
