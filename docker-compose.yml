@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python3 api.py 0.0.0.0 8080'
+    volumes:
+      - .:/code
+    ports:
+      - 8080:8080
+    environment:
+      - DATABASE_URL=your_url
+    depends_on:
+      - db
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=habitap
+      - POSTGRES_PASSWORD=habitap
+      - POSTGRES_DB=habitap
+
+volumes:
+  postgres_data:

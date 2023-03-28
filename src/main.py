@@ -16,6 +16,7 @@ import src.schemas as schemas
 import src.auth as auth
 import src.config as config
 import src.dependencies as deps
+import src.settings as settings
 
 from src.db import engine
 
@@ -52,7 +53,7 @@ app.openapi = custom_openapi
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(deps.get_db),
-    settings: config.Settings = Depends(deps.get_settings),
+    settings: config.Settings = Depends(settings.get),
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -101,7 +102,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(deps.get_db)):
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(deps.get_db),
-    settings: config.Settings = Depends(deps.get_settings),
+    settings: config.Settings = Depends(settings.get),
 ):
     user = auth.authenticate_user(
         db, pwd_context, form_data.username, form_data.password

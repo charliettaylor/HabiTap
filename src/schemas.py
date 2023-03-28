@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from pydantic import BaseModel, Field, BaseSettings
+from pydantic import BaseModel, Field, BaseSettings, EmailStr
 from uuid import UUID
 from datetime import date
 
@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    sqlalchemy_database_url: str
 
     class Config:
         env_file = ".env"
@@ -25,7 +26,7 @@ class TokenData(BaseModel):
 
 class UserBase(BaseModel):
     # User's email
-    email: str = Field(
+    email: EmailStr = Field(
         default="test@example.com", description="The email this user registered with"
     )
 
