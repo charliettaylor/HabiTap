@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from sqlalchemy.orm import Mapped, relationship, mapped_column
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, relationship, mapped_column
 import uuid
 
 from src.db import Base

@@ -9,7 +9,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      - DATABASE_URL=your_url
+      - DATABASE_URL=postgresql://habitap:habitap@db:5432/habitap
     depends_on:
       - db
   db:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
+from datetime import date
 from pydantic import BaseModel, Field, BaseSettings, EmailStr
 from uuid import UUID
-from datetime import date
 
 
 class Settings(BaseSettings):

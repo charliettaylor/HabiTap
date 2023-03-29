@@ -1,25 +1,34 @@
 from datetime import datetime, timedelta
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import Depends, HTTPException, status
 from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
 
 import src.crud as crud
+from src.dependencies import pwd_context
 
 
-def verify_password(pwd_context, plain_password, hashed_password):
+def verify_password(
+    plain_password,
+    hashed_password,
+):
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(pwd_context, password):
+def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def authenticate_user(db: Session, pwd_context, username: str, password: str):
+def authenticate_user(
+    db: Session,
+    username: str,
+    password: str,
+):
     user = crud.get_user_by_email(db, username)
     if not user:
         return False
-    if not verify_password(pwd_context, password, user.hashed_password):
+    if not verify_password(password, user.hashed_password):
         return False
     return user
 
