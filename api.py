@@ -1,8 +1,8 @@
-import sys
+import os
 
 from src.main import app
 from uvicorn import run
 
 if __name__ == "__main__":
-    host, port = sys.argv[1], int(sys.argv[2])
-    run(app, host=host, port=port, reload=False)
+    port = int(os.environ.get("PORT", 8080))
+    run(app, host="0.0.0.0", port=port, reload=False)
