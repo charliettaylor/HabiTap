@@ -24,3 +24,6 @@ pip install -r requirements.txt
 python3 api.py <host> <port>
 ```
 
+### Documentation
+
+To view docs about the API, the Swagger page can be viewed at `/docs`
