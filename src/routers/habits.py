@@ -54,4 +54,15 @@ async def create_habit(
         raise HTTPException(
             status_code=400, detail="Habit with that name already exists"
         )
+
+    if habit.is_counted and habit.goal != 1:
+        raise HTTPException(
+            status_code=400, detail="Goal should be 1 for non-counted habits"
+        )
+
+    if habit.is_counted and habit.goal < 1:
+        raise HTTPException(
+            status_code=400, detail="Goal should be greater than 1 for counted habits"
+        )
+
     return crud.create_habit(db=db, habit=habit, user_id=user.id)

@@ -46,11 +46,14 @@ class User(UserBase):
 class HabitBase(BaseModel):
     name: str = Field(default="", description="The name for this habit")
     description: str = Field(default="", description="The description for this habit")
-    goal: int = Field(default=0, description="The goal for this habit")
+    goal: int = Field(default=1, description="The goal for this habit")
     start_date: date = Field(
         default=date.today(), description="The date this habit started"
     )
-    is_counted: bool = Field(default=False, description="Is this habit counted?")
+    is_counted: bool = Field(
+        default=False,
+        description="Is this habit counted? Counted habits should be something that can be tracked (e.g. pushups, situps, etc.) Non-counted habits should be something that is either done or not done (e.g. read a book, meditate, etc.)",
+    )
 
 
 class Habit(HabitBase):
@@ -67,8 +70,11 @@ class HabitCreate(HabitBase):
 
 class EntryBase(BaseModel):
     date = Field(default=date.today(), description="The date this entry was created")
-    value: int = Field(default=0, description="The value for this entry")
-    habit_id: UUID = Field(default="", description="The habit this entry belongs to")
+    value: int = Field(
+        default=0,
+        description="The value for this entry. Counted habits will take any non-negative number as a value. Non-counted habits will take either 0 or 1. 0 means the habit was not completed that day, while 1 means it was.",
+    )
+    habit_id: UUID = Field(default="", description="The habit ID this entry belongs to")
 
     class Config:
         orm_mode = True

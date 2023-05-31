@@ -51,7 +51,7 @@ def create_entry(
     if not habit.is_counted and entry.value not in [0, 1]:
         raise HTTPException(
             status_code=400,
-            detail="Non-counted habits must be 1 or 0 for true or false",
+            detail="Non-counted habits must be 1 or 0 for done or not done",
         )
 
     return crud.create_entry(db=db, user_id=user.id, entry=entry)
