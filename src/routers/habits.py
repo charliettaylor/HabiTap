@@ -17,6 +17,20 @@ router = APIRouter(
 )
 
 
+@router.get("/", response_model=list[schemas.Habit])
+async def get_user_habits(
+    db: Session = Depends(deps.get_db),
+    user: schemas.User = Depends(deps.get_current_active_user),
+):
+    habits = crud.get_habits_by_user(db, user.id)
+
+    if not habits:
+        raise HTTPException(status_code=404, detail=f"No habits for this user")
+
+    print("here", habits)
+    return habits
+
+
 @router.get("/{name}", response_model=schemas.Habit)
 async def get_habit_by_name(
     name: str,

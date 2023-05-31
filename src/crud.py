@@ -35,6 +35,10 @@ def get_habit(db: Session, id: UUID):
     return db.query(models.Habit).filter(models.Habit.id == id).first()
 
 
+def get_habits_by_user(db: Session, id: UUID):
+    return db.query(models.Habit).filter(models.Habit.owner_id == id).all()
+
+
 def get_habit_by_name(db: Session, user_id: UUID, name: str):
     return (
         db.query(models.Habit)
