@@ -2,8 +2,11 @@
 from datetime import timedelta
 from uuid import UUID
 
+import uvicorn
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.openapi.utils import get_openapi
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -15,7 +18,7 @@ import src.crud as crud
 import src.dependencies as deps
 import src.models as models
 import src.schemas as schemas
-from src.routers import entries, habits
+from src.routes.api import router as api_router
 import src.settings as settings
 
 from src.db import engine
@@ -23,8 +26,18 @@ from src.db import engine
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-app.include_router(entries.router)
-app.include_router(habits.router)
+
+origins = ["http://localhost:8080"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_router)
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -87,3 +100,7 @@ async def read_users_me(
     current_user: schemas.User = Depends(deps.get_current_active_user),
 ):
     return current_user
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8080, log_level="info", reload=True)
